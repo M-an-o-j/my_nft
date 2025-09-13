@@ -1,46 +1,8 @@
 import React, { useState } from "react";
 import { Wallet, Coins, Eye, Link, Sparkles, ArrowRight, Copy, ExternalLink } from "lucide-react";
 
-// Replace these with your actual API functions
-// import { mintNFT, getOwner, getTokenURI } from "./api";
-
-// Mock API functions - replace with your actual implementations
-const mintNFT = async (toAddress, ipfsUri) => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  // Replace with your actual API call
-  // const response = await fetch('/api/mint', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ toAddress, ipfsUri })
-  // });
-  // return response.json();
-  
-  return { data: { transactionHash: "0x1234567890abcdef1234567890abcdef12345678" } };
-};
-
-const getOwner = async (tokenId) => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Replace with your actual API call
-  // const response = await fetch(`/api/owner/${tokenId}`);
-  // return response.json();
-  
-  return { data: { owner: "0xabcdef1234567890abcdef1234567890abcdef12" } };
-};
-
-const getTokenURI = async (tokenId) => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Replace with your actual API call
-  // const response = await fetch(`/api/tokenuri/${tokenId}`);
-  // return response.json();
-  
-  return { data: { tokenURI: "ipfs://QmYourTokenURIHashHere1234567890abcdef" } };
-};
+// Import your actual API functions
+import { mintNFT, getOwner, getTokenURI } from "./api";
 
 function App() {
   // State for mint form
@@ -73,13 +35,27 @@ function App() {
     }
 
     setIsLoading(prev => ({ ...prev, mint: true }));
+    setMintResult(""); // Clear previous results
+    
     try {
+      console.log("Starting mint process...", { toAddress, ipfsUri });
       const res = await mintNFT(toAddress, ipfsUri);
-      setMintResult(`✅ Minted! TxHash: ${res.data.transactionHash}`);
+      console.log("Mint response:", res);
+      
+      // Handle different response structures
+      const txHash = res.data?.transactionHash || res.transactionHash || res.hash || "Unknown";
+      setMintResult(`✅ Minted! TxHash: ${txHash}`);
     } catch (err) {
-      setMintResult("❌ Error: " + (err.response?.data?.detail || err.message));
+      console.error("Mint error:", err);
+      const errorMessage = err.response?.data?.detail || 
+                          err.response?.data?.message || 
+                          err.message || 
+                          "Unknown error occurred";
+      setMintResult("❌ Error: " + errorMessage);
+    } finally {
+      // Always reset loading state
+      setIsLoading(prev => ({ ...prev, mint: false }));
     }
-    setIsLoading(prev => ({ ...prev, mint: false }));
   };
 
   // Handle Get Owner
@@ -90,13 +66,27 @@ function App() {
     }
 
     setIsLoading(prev => ({ ...prev, owner: true }));
+    setOwner(""); // Clear previous results
+    
     try {
+      console.log("Getting owner for token:", tokenId);
       const res = await getOwner(tokenId);
-      setOwner(res.data.owner);
+      console.log("Owner response:", res);
+      
+      // Handle different response structures
+      const ownerAddress = res.data?.owner || res.owner || "Unknown";
+      setOwner(ownerAddress);
     } catch (err) {
-      setOwner("❌ Error: " + (err.response?.data?.detail || err.message));
+      console.error("Get owner error:", err);
+      const errorMessage = err.response?.data?.detail || 
+                          err.response?.data?.message || 
+                          err.message || 
+                          "Unknown error occurred";
+      setOwner("❌ Error: " + errorMessage);
+    } finally {
+      // Always reset loading state
+      setIsLoading(prev => ({ ...prev, owner: false }));
     }
-    setIsLoading(prev => ({ ...prev, owner: false }));
   };
 
   // Handle Get TokenURI
@@ -107,13 +97,27 @@ function App() {
     }
 
     setIsLoading(prev => ({ ...prev, uri: true }));
+    setUri(""); // Clear previous results
+    
     try {
+      console.log("Getting URI for token:", tokenId);
       const res = await getTokenURI(tokenId);
-      setUri(res.data.tokenURI);
+      console.log("URI response:", res);
+      
+      // Handle different response structures
+      const tokenUri = res.data?.tokenURI || res.tokenURI || res.uri || "Unknown";
+      setUri(tokenUri);
     } catch (err) {
-      setUri("❌ Error: " + (err.response?.data?.detail || err.message));
+      console.error("Get URI error:", err);
+      const errorMessage = err.response?.data?.detail || 
+                          err.response?.data?.message || 
+                          err.message || 
+                          "Unknown error occurred";
+      setUri("❌ Error: " + errorMessage);
+    } finally {
+      // Always reset loading state
+      setIsLoading(prev => ({ ...prev, uri: false }));
     }
-    setIsLoading(prev => ({ ...prev, uri: false }));
   };
 
   // Handle Enter key press
